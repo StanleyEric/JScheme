@@ -3,94 +3,167 @@
 import java.io.*;
 
 class Scanner {
-  private PushbackInputStream in;
-  private byte[] buf = new byte[1000];
+    private PushbackInputStream in;
 
-  public Scanner(InputStream i) { in = new PushbackInputStream(i); }
-    
-  public Token getNextToken() {
-    int bite = -1;
-	
-    // It would be more efficient if we'd maintain our own input buffer
-    // and read characters out of that buffer, but reading individual
-    // characters from the input stream is easier.
-    try {
-      bite = in.read();
-    } catch (IOException e) {
-      System.err.println("We fail: " + e.getMessage());
+    // private byte[] buf = new byte[1000];
+    // There's no real reason for the buffer in java ^
+    // delete? -Mitch
+
+    public Scanner(InputStream i) {
+	in = new PushbackInputStream(i);
     }
 
-    // TODO: skip white space and comments
-	
-    if (bite == -1)
-      return null;
+    public Token getNextToken() {
+	int bite = -1;
 
-    char ch = (char) bite;
-	
-    // Special characters
-    if (ch == '\'')
-      return new Token(Token.QUOTE);
-    else if (ch == '(')
-      return new Token(Token.LPAREN);
-    else if (ch == ')')
-      return new Token(Token.RPAREN);
-    else if (ch == '.')
-      // We ignore the special identifier `...'.
-      return new Token(Token.DOT);
+	// It would be more efficient if we'd maintain our own input buffer
+	// and read characters out of that buffer, but reading individual
+	// characters from the input stream is easier.
+	try {
+	    bite = in.read();
+	} catch (IOException e) {
+	    System.err.println("We fail: " + e.getMessage());
+	}
 
-    // Boolean constants
-    else if (ch == '#') {
-      try {
-	bite = in.read();
-      } catch (IOException e) {
-	System.err.println("We fail: " + e.getMessage());
-      }
+	// skip white space and comments
 
-      if (bite == -1) {
-	System.err.println("Unexpected EOF following #");
-	return null;
-      }
-      ch = (char) bite;
-      if (ch == 't')
-	return new Token(Token.TRUE);
-      else if (ch == 'f')
-	return new Token(Token.FALSE);
-      else {
-	System.err.println("Illegal character '" + (char) ch + "' following #");
-	return getNextToken();
-      }
-    }
+	if (Character.isWhitespace(bite)) // This will recursively help us skip
+					  // whitespace chars -Mitch
+	{
+	    return this.getNextToken();
+	}
 
-    // String constants
-    else if (ch == '"') {
-      // TODO: scan a string into the buffer variable buf
-      return new StrToken(buf.toString());
-    }
+	if (bite == ';') // While this should take care of comments -Mitch
+	    try {
+		/*
+		 * These are (almost) all the unicode newline chars. I didn't
+		 * really want to implement the CR (U+000D) followed by LF
+		 * (U+000A) as a single newline. The code should ignore them
+		 * anyway. This code works well enough for now. It still doesn't
+		 * recognize all unicode supported newlines, and that's a
+		 * problem.
+		 */
+		while (bite != 10 && bite != 11 && bite != 12 && bite != 13) {
+		    bite = in.read();
+		}
+	    } catch (IOException e) {
+		System.err.println("We fail: " + e.getMessage());
+	    }
 
-    // Integer constants
-    else if (ch >= '0' && ch <= '9') {
-      int i = ch - '0';
-      // TODO: scan the number and convert it to an integer
+	if (bite == -1)
+	    return null;
 
-      // put the character after the integer back into the input
-      // in->putback(ch);
-      return new IntToken(i);
-    }
+	char ch = (char) bite;
 
-    // Identifiers
-    else if (ch >= 'A' && ch <= 'Z'
-	     /* or ch is some other valid first character for an identifier */) {
-      // TODO: scan an identifier into the buffer
+	// Special characters
+	if (ch == '\'')
+	    return new Token(Token.QUOTE);
+	else if (ch == '(')
+	    return new Token(Token.LPAREN);
+	else if (ch == ')')
+	    return new Token(Token.RPAREN);
+	else if (ch == '.')
+	    // We ignore the special identifier `...'.
+	    return new Token(Token.DOT);
 
-      // put the character after the identifier back into the input
-      // in->putback(ch);
-      return new IdentToken(buf.toString());
-    }
+	// Boolean constants
+	else if (ch == '#') {
+	    try {
+		bite = in.read();
+	    } catch (IOException e) {
+		System.err.println("We fail: " + e.getMessage());
+	    }
 
-    // Illegal character
-    else {
-      System.err.println("Illegal input character '" + (char) ch + '\'');
-      return getNextToken();
-    }
-  };
+	    if (bite == -1) {
+		System.err.println("Unexpected EOF following #");
+		return null;
+	    }
+	    ch = (char) bite;
+	    if (ch == 't')
+		return new Token(Token.TRUE);
+	    else if (ch == 'f')
+		return new Token(Token.FALSE);
+	    else {
+		System.err.println("Illegal character '" + (char) ch
+			+ "' following #");
+		return getNextToken();
+	    }
+	}
+
+	// String constants
+	else if (ch == '"') {
+	    // TODO: scan a string into the buffer variable buf
+	    String str = "";
+	    try{
+		bite = in.read();
+		if(bite == -1)
+		    {
+		    	System.err.println("Unexpected EOF following #");
+			return null;
+		    }
+		ch = (char) bite;
+		while(ch != '"')
+		{
+		    str += ch;
+		    bite = in.read();
+		    ch = (char) bite;
+		}
+	    }catch(Exception e)
+	    {
+		System.err.println("We done goofed: " + e.getLocalizedMessage());
+	    }
+	    return new StrToken(str);
+	}
+
+	// Integer constants
+	else if (ch >= '0' && ch <= '9') {
+	    // TODO: scan the number and convert it to an integer
+	    String i = "";
+	    while (Character.isDigit(ch)) {
+		i += ch;
+		try {
+		    bite = in.read();
+		    if (bite == -1) {
+			System.err.println("Unexpected EOF following an int");
+			return null;
+		    }
+		    ch = (char) bite;
+		} catch (Exception e) {
+		    System.err.println("We failed :" + e.getLocalizedMessage());
+		}
+	    }
+	    return new IntToken(Integer.parseInt(i));
+	}
+
+	// Identifiers
+	else if (Character.isLetter(ch)
+	/* or ch is some other valid first character for an identifier */) {
+	    // TODO: scan an identifier into the buffer
+	    String ident = "";
+	    while (!Character.isWhitespace(ch) && 
+		    ch != '(' && ch != ')' &&
+		    ch != '{' && ch != '}' && 
+		    ch != '[' && ch != ']') //this should be everything not allowed in identifiers.
+	    {
+		ident += ch;
+		try {
+		    bite = in.read();
+		    if (bite == -1) {
+			System.err.println("Unexpected EOF following an int");
+			return null;
+		    }
+		    ch = (char) bite;
+		} catch (Exception e) {
+		    System.err.println("We failed :" + e.getLocalizedMessage());
+		}
+	    }
+	    return new IdentToken(ident);
+	}
+
+	// Illegal character
+	else {
+	    System.err.println("Illegal input character '" + (char) ch + '\'');
+	    return getNextToken();
+	}
+    };
 }
