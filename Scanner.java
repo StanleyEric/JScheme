@@ -5,10 +5,6 @@ import java.io.*;
 class Scanner {
     private PushbackInputStream in;
 
-    // private byte[] buf = new byte[1000];
-    // There's no real reason for the buffer in java ^
-    // delete? -Mitch
-
     public Scanner(InputStream i) {
 	in = new PushbackInputStream(i);
     }
@@ -136,20 +132,28 @@ class Scanner {
 	}
 
 	// Identifiers
+	
 	else if (Character.isLetter(ch)
 	/* or ch is some other valid first character for an identifier */) {
-	    // TODO: scan an identifier into the buffer
 	    String ident = "";
-	    while (!Character.isWhitespace(ch) && 
-		    ch != '(' && ch != ')' &&
-		    ch != '{' && ch != '}' && 
-		    ch != '[' && ch != ']') //this should be everything not allowed in identifiers.
+	    while (!Character.isWhitespace(ch)) 
 	    {
 		ident += ch;
 		try {
 		    bite = in.read();
+		    if(ch == ')')
+		    {
+			/**
+			 * If we hava a ')', the identifier is over. We need to move the input 
+			 * stream back to the ')' so that we can return a RPAREN token,
+			 * and return what we have. 
+			 */
+			in.unread(ch);
+			ident = ident.substring(0, ident.length() -1);
+			return new IdentToken(ident);
+		    }
 		    if (bite == -1) {
-			System.err.println("Unexpected EOF following an int");
+			System.err.println("Unexpected EOF in an identifier");
 			return null;
 		    }
 		    ch = (char) bite;
