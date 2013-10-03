@@ -11,7 +11,12 @@ class Cons extends Node {
     // parseList only look at the car for selecting the appropriate
     // object from the Special hierarchy and to leave the rest of
     // parsing up to the interpreter.
-    void parseList() { }
+    void parseList() { 
+	if (car.isBoolean() || car.isNumber() || car.isString() || car.isSymbol())
+	{
+	    form = new Regular();
+	}
+    }
     // TODO: Add any helper functions for parseList as appropriate.
 
     public Cons(Node a, Node d) {
