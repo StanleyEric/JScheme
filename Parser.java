@@ -52,13 +52,17 @@
 class Parser {
     private Scanner scanner;
     Node parseTree = new Node();
-    Nil utilNil = new Nil(); //This will apparantly make future parts 
+    Nil utilNil = new Nil(); //This will apparently make future parts 
     			     //of the project easier.
     
     public Parser(Scanner s) {
 	scanner = s;
     }
-
+    /**
+     * This is what gets called from Main. Just a glorified ability to start
+     * the process.
+     * @return The completed parse tree.
+     */
     public Node parseExp() {
 	return parseExp(scanner.getNextToken());
     }
@@ -69,12 +73,14 @@ class Parser {
 	Token t = scanner.getNextToken();
 	if(t.getType() == Token.RPAREN)
 	{
+	    Main.addToDebugStream("Detected RPAREN. Adding Nil Node");
 	    return utilNil;
 	}
 	else if(t.getType() == Token.INT || t.getType() == Token.STRING ||
 		t.getType() == Token.IDENT || t.getType() == Token.TRUE ||
 		t.getType() == Token.TRUE || t.getType() == Token.FALSE) //Terminators
 	{
+	    Main.addToDebugStream("Forming Cons node. Token for the car is " + t);
 	    return new Cons(parseExp(t), parseRest());
 	}
 	else
@@ -91,12 +97,19 @@ class Parser {
      * @return a valid parse tree.
      */
     protected Node parseExp(Token t) {
-	if(t.getType() == TokenType.QUOTE)
+	if(t == null)//This can happen when we reach the end of the file
 	{
-	    
+	    return utilNil;
+	}
+	else if(t.getType() == TokenType.QUOTE)
+	{
+	    Node n = parseExp(scanner.getNextToken());
+	    Quote q = new Quote(n);
+	    return null; //TODO figure out how to return a node here.
 	}
 	else if(t.getType() == TokenType.LPAREN)
 	{
+	    Main.addToDebugStream("Found a LPAREN. parseRest().");
 	    return parseRest();
 	}
 	else if(t.getType() == TokenType.DOT)
@@ -121,6 +134,7 @@ class Parser {
 	}
 	else if(t.getType() == TokenType.IDENT)
 	{
+	    Main.addToDebugStream("Found an identifier with name: " + t.getName());
 	    return new Ident(t.getName());
 	}
 	else

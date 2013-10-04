@@ -20,8 +20,14 @@ class Node {
   // encode that in the sign bit of n.  If you need additional parameters,
   // make sure that you define the method print in all the appropriate
   // subclasses of Node as well.
+  /**
+   * The print function that gets overridden in all subclasses of
+   * Node
+   * @param n The number of spaces to indent
+   * @param p For classes Cons and Nil, print(n,TRUE) means that the open
+   * parenthesis was printed already by the caller.
+   */
   void print(int n, boolean p) {
-    print(n);
   }
 
   // For parsing Cons nodes, for printing trees, and later for
@@ -29,7 +35,7 @@ class Node {
   // the type of a node and that extract some information.
 
   // TODO: implement these in the appropriate subclasses to return TRUE.
-  public boolean isBoolean()   { return false; }  // BooleanLit
+  public boolean isBoolean(){ return false; }  // BooleanLit
   public boolean isNumber() { return false; }  // IntLit
   public boolean isString() { return false; }  // StringLit
   public boolean isSymbol() { return false; }  // Ident

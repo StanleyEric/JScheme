@@ -17,4 +17,9 @@ class BooleanLit extends Node {
       System.out.println("#f");
     }
   }
+  @Override
+  public boolean isBoolean()
+  {
+      return true;
+  }
 }

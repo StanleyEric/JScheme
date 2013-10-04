@@ -10,4 +10,21 @@ class Ident extends Node {
 
     System.out.println(name);
   }
+  
+  @Override
+  public boolean isSymbol()
+  {
+      return true;
+  }
+  
+  /**
+   * added this as a way for the cons node to tell if the identifier was something like an "if" or 
+   * "+" symbol. I'm pretty sure it matters if not now, then later.
+   * @return
+   */
+  @Override
+  public String toString()
+  {
+      return name;
+  }
 }

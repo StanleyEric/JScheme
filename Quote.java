@@ -8,9 +8,9 @@ class Quote extends Special {
     // TODO: Add an appropriate constructor.
     /**
      * This constructs a quote node, which will contain a symbol of some type.
-     * Becuase this thing doesn't actually get evaluated, I'm not sure
+     * Because this thing doesn't actually get evaluated, I'm not sure
      * what to do with it, or how we should handle it. Also, I have no clue how to 
-     * use this class in the actual parser becuase it isn't a node.
+     * use this class in the actual parser because it isn't a node.
      * @param symbol The symbol that the quote node holds.
      */
     public Quote(Node symbol)
@@ -18,5 +18,6 @@ class Quote extends Special {
 	this.symbol = symbol;
     }
     void print(Node t, int n, boolean p) {
+	
     }
 }
